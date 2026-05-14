@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "moodle-monitor"
+version = "1.0.0"
+description = "Sistema autônomo de monitoramento de atividades acadêmicas em portais Moodle"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28.0",
+    "beautifulsoup4>=4.13.0",
+    "lxml>=5.3.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+    "structlog>=25.2.0",
+    "aiofiles>=24.1.0",
+]
+
+[project.urls]
+Repository = "https://github.com/user/moodle-monitor"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src/*"]

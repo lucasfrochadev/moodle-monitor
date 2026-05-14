@@ -1,0 +1,88 @@
+# Moodle Monitor — Configuração
+# Credenciais devem ser definidas via variáveis de ambiente (.env)
+
+portal:
+  url: "${PORTAL_URL}"
+  username: "${PORTAL_USERNAME}"
+  password: "${PORTAL_PASSWORD}"
+  campus_id: "${PORTAL_CAMPUS_ID}"
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+  timeout_seconds: 30
+  max_retries: 3
+  retry_backoff_base: 2.0
+  verify_ssl: true
+
+moodle:
+  url: "${MOODLE_URL}"
+  timeout_seconds: 30
+  max_retries: 3
+  retry_backoff_base: 2.0
+  verify_ssl: true
+
+monitoring:
+  check_interval_minutes: 15
+  urgent_check_interval_minutes: 5
+  expired_check_interval_minutes: 60
+  jitter_percent: 20
+  max_concurrent_courses: 5
+  max_concurrent_activities_per_course: 10
+  urgent_deadline_hours: 24
+  snapshot_retention_days: 90
+  change_retention_days: 180
+  notification_cooldown_minutes: 30
+  min_diff_chars: 3
+  course_ids:
+    - 16090   # ARQUITETURA DE COMPUTADORES
+    - 16057   # BANCO DE DADOS I
+    - 16020   # ANALISE E PROJETO DE SISTEMAS ORIENTADO A OBJETOS
+    - 16016   # DESENVOLVIMENTO WEB II
+    - 16004   # INTERFACE HOMEM-MAQUINA
+    - 15298   # INTERNET DAS COISAS
+    - 15659   # LABORATORIO DE PROGRAMACAO III
+    - 16058   # LINGUAGEM PARA APLICACOES INTERNET I
+    - 16003   # METODOLOGIA DA PESQUISA CIENTIFICA
+    - 15980   # PRATICA DE ANALISE E PROJETO ORIENTADO A OBJETOS
+    - 15423   # PROGRAMACAO AVANCADA
+
+storage:
+  database_path: "./data/monitor.db"
+  backup_enabled: true
+  backup_interval_hours: 24
+  backup_dir: "./data/backups"
+
+notifications:
+  enabled: true
+  on_new_activity: true
+  on_deadline_change: true
+  on_description_change: true
+  on_file_added: true
+  on_file_removed: false
+  on_name_change: true
+  on_grade_change: true
+
+  telegram:
+    enabled: false
+    bot_token: "${TELEGRAM_BOT_TOKEN}"
+    chat_id: "${TELEGRAM_CHAT_ID}"
+
+  discord:
+    enabled: false
+    webhook_url: "${DISCORD_WEBHOOK_URL}"
+
+  email:
+    enabled: true
+    smtp_server: "${SMTP_SERVER}"
+    smtp_port: 587
+    smtp_username: "${SMTP_USERNAME}"
+    smtp_password: "${SMTP_PASSWORD}"
+    from_address: "${SMTP_USERNAME}"
+    to_address: "${NOTIFICATION_EMAIL}"
+    use_tls: true
+
+logging:
+  level: "INFO"
+  format: "json"
+  output: "console"
+  file_path: "./logs/monitor.log"
+  max_file_size_mb: 50
+  backup_count: 7
