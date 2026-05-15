@@ -20,3 +20,15 @@ export async function fetchTaskHistory(taskId: string, limit?: number): Promise<
   const { data } = await client.get(`/history/${taskId}`, { params: { limit } });
   return data;
 }
+
+export interface Discipline {
+  id: string;
+  name: string;
+  code: string;
+  course_id: number;
+}
+
+export async function fetchDisciplines(): Promise<Discipline[]> {
+  const { data } = await client.get('/disciplines');
+  return data;
+}

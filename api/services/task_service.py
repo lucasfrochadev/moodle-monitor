@@ -210,7 +210,7 @@ class TaskService:
         if not board:
             return []
         rows = db.execute("""
-            SELECT t.*, ai.source_course_name
+            SELECT t.*, ai.source_course_name, ai.source_activity_id
             FROM tasks t
             LEFT JOIN activity_imports ai ON ai.task_id = t.id
             WHERE t.board_id = ? AND t.archived = 0

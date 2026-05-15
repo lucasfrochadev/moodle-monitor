@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { useUIStore } from '../../store/uiStore';
@@ -6,6 +6,7 @@ import { cn } from '../../utils/cn';
 
 export function AppLayout() {
   const { sidebarOpen } = useUIStore();
+  const location = useLocation();
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -16,7 +17,9 @@ export function AppLayout() {
       )}>
         <Navbar />
         <main className="flex-1 overflow-y-auto bg-bg">
-          <Outlet />
+          <div key={location.pathname} className="animate-fade-in">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

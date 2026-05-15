@@ -15,16 +15,19 @@ import { KanbanColumn } from './KanbanColumn';
 import { KanbanCard } from './KanbanCard';
 import { Button } from '../ui/Button';
 import { CreateColumnModal } from './CreateColumnModal';
+import { EditColumnModal } from './EditColumnModal';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { useBoardStore } from '../../store/boardStore';
 import { useTaskStore } from '../../store/taskStore';
 import { useUIStore } from '../../store/uiStore';
+import type { ColumnWithTasks } from '../../types';
 
 export function KanbanBoard() {
-  const { currentBoard, loadBoard, addColumn, deleteColumn } = useBoardStore();
+  const { currentBoard, loadBoard, addColumn, updateColumn, deleteColumn } = useBoardStore();
   const { deleteTask, moveTask } = useTaskStore();
   const { openTaskModal, openCreateTask, setCreateColumnModalOpen, createColumnModalOpen, confirmDialog, showConfirm, closeConfirm } = useUIStore();
   const [activeTask, setActiveTask] = useState<any>(null);
+  const [editingColumn, setEditingColumn] = useState<ColumnWithTasks | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -126,6 +129,12 @@ export function KanbanBoard() {
     if (boardId) openTaskModal(taskId, boardId);
   };
 
+  const handleEditColumn = async (name: string, color?: string) => {
+    if (!editingColumn || !boardId) return;
+    await updateColumn(editingColumn.id, { name, color });
+    loadBoard(boardId);
+  };
+
   if (!currentBoard) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -152,6 +161,7 @@ export function KanbanBoard() {
                 onTaskClick={(taskId) => openTaskModal(taskId, currentBoard.id)}
                 onEditTask={handleEditTask}
                 onDeleteTask={(taskId) => confirmDeleteTask(taskId)}
+                onEditColumn={() => setEditingColumn(column)}
                 onDeleteColumn={() => confirmDeleteColumn(column.id, column.name)}
               />
             ))}
@@ -182,6 +192,13 @@ export function KanbanBoard() {
         open={createColumnModalOpen}
         onClose={() => setCreateColumnModalOpen(false)}
         onSubmit={handleAddColumn}
+      />
+
+      <EditColumnModal
+        open={!!editingColumn}
+        column={editingColumn}
+        onClose={() => setEditingColumn(null)}
+        onSubmit={handleEditColumn}
       />
 
       <ConfirmDialog

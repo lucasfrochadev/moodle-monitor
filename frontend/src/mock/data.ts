@@ -84,3 +84,17 @@ export const MOCK_DASHBOARD_STATS: DashboardStats = {
   total_boards: 4,
   total_activities_imported: 6,
 };
+
+export const MOCK_DISCIPLINES = [
+  { id: '16090', name: 'ARQUITETURA DE COMPUTADORES', code: 'COD16090', course_id: 16090 },
+  { id: '16057', name: 'BANCO DE DADOS I', code: 'COD16057', course_id: 16057 },
+  { id: '16020', name: 'ANALISE E PROJETO DE SISTEMAS ORIENTADO A OBJETOS', code: 'COD16020', course_id: 16020 },
+  { id: '16016', name: 'DESENVOLVIMENTO WEB II', code: 'COD16016', course_id: 16016 },
+  { id: '16004', name: 'INTERFACE HOMEM-MAQUINA', code: 'COD16004', course_id: 16004 },
+  { id: '15298', name: 'INTERNET DAS COISAS', code: 'COD15298', course_id: 15298 },
+  { id: '15659', name: 'LABORATORIO DE PROGRAMACAO III', code: 'COD15659', course_id: 15659 },
+  { id: '16058', name: 'LINGUAGEM PARA APLICACOES INTERNET I', code: 'COD16058', course_id: 16058 },
+  { id: '16003', name: 'METODOLOGIA DA PESQUISA CIENTIFICA', code: 'COD16003', course_id: 16003 },
+  { id: '15980', name: 'PRATICA DE ANALISE E PROJETO ORIENTADO A OBJETOS', code: 'COD15980', course_id: 15980 },
+  { id: '15423', name: 'PROGRAMACAO AVANCADA', code: 'COD15423', course_id: 15423 },
+];

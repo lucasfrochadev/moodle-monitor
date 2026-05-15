@@ -1,5 +1,5 @@
 import type { Task } from '../types';
-import { MOCK_BOARDS, MOCK_COLUMNS, MOCK_DASHBOARD_STATS, MOCK_TASKS, MOCK_VIGENT_ACTIVITIES, getMockBoardFull } from './data';
+import { MOCK_BOARDS, MOCK_COLUMNS, MOCK_DASHBOARD_STATS, MOCK_TASKS, MOCK_VIGENT_ACTIVITIES, MOCK_DISCIPLINES, getMockBoardFull } from './data';
 
 export function handleMockRequest(method: string, url?: string, data?: any): { data: any } | null {
   if (!url) return null;
@@ -169,6 +169,10 @@ export function handleMockRequest(method: string, url?: string, data?: any): { d
 
   if (baseUrl === '/health' && method === 'GET') {
     return { data: { status: 'ok' } };
+  }
+
+  if (baseUrl === '/disciplines' && method === 'GET') {
+    return { data: MOCK_DISCIPLINES };
   }
 
   return null;

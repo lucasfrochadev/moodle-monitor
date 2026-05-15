@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -37,7 +39,7 @@ class BoardOut(BaseModel):
 
 
 class BoardFull(BoardOut):
-    columns: list["ColumnOut"] = []
+    columns: list["ColumnWithTasks"] = []
 
 
 # ─── Column ───────────────────────────────────────────────────────────────────
@@ -61,6 +63,10 @@ class ColumnOut(BaseModel):
     position: int
     color: str
     created_at: str
+
+
+class ColumnWithTasks(ColumnOut):
+    tasks: list[TaskOut] = []
 
 
 # ─── Task ─────────────────────────────────────────────────────────────────────

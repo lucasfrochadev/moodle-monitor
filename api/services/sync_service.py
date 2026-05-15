@@ -98,7 +98,7 @@ class SyncService:
             pass
         return "pending"
 
-    def sync(self) -> dict:
+    def sync(self, course_ids: list[int] | None = None) -> dict:
         imported = 0
         updated = 0
         errors = 0
@@ -112,13 +112,12 @@ class SyncService:
         vigent_cols = self._board_cache.get(vigent_board_id, {})
 
         try:
-            rows = monitor.execute("""
+            query = """
                 SELECT
                     a.id AS activity_id,
                     a.course_id,
                     a.name AS activity_name,
-                    a.cmid,
-                    a.type,
+                    a.first_seen_at,
                     COALESCE(sn.description, '') AS description,
                     sn.due_date,
                     sn.full_hash,
@@ -133,9 +132,15 @@ class SyncService:
                         GROUP BY activity_id
                     )
                 ) sn ON sn.activity_id = a.id
-                LEFT JOIN courses c ON c.course_id = a.course_id
-                ORDER BY a.course_id, a.name
-            """).fetchall()
+                LEFT JOIN courses c ON c.id = a.course_id
+            """
+            params = []
+            if course_ids:
+                placeholders = ",".join("?" * len(course_ids))
+                query += f" WHERE c.moodle_course_id IN ({placeholders})"
+                params = course_ids
+            query += " ORDER BY a.course_id, a.name"
+            rows = monitor.execute(query, params).fetchall()
 
             with db.transaction() as cur:
                 for row in rows:
@@ -145,6 +150,7 @@ class SyncService:
                         course_name = row["course_name"] or ""
                         title = row["activity_name"] or "(sem título)"
                         description = row["description"] or ""
+                        first_seen = row["first_seen_at"] or ""
                         due_date_raw = row["due_date"]
                         due_date = None
                         if due_date_raw:
@@ -177,10 +183,12 @@ class SyncService:
                             cur.execute("""
                                 UPDATE tasks
                                 SET title = ?, description = ?, discipline = ?,
-                                    due_date = ?, status = ?, updated_at = ?
+                                    due_date = ?, publication_date = ?,
+                                    status = ?, updated_at = ?
                                 WHERE id = ?
                             """, (title, description, course_name,
-                                  due_date, status, now(), task_id))
+                                  due_date, first_seen,
+                                  status, now(), task_id))
                             cur.execute("""
                                 UPDATE activity_imports
                                 SET source_hash = ?, source_course_name = ?,
@@ -199,11 +207,12 @@ class SyncService:
                             cur.execute("""
                                 INSERT INTO tasks
                                     (id, column_id, board_id, title, description,
-                                     discipline, due_date, status, position)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                     discipline, due_date, publication_date,
+                                     status, position)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             """, (task_id, column_id, vigent_board_id,
                                   title, description, course_name,
-                                  due_date, status, 0))
+                                  due_date, first_seen, status, 0))
                             imp_id = new_id()
                             cur.execute("""
                                 INSERT INTO activity_imports

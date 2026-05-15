@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { AppLayout } from './components/layout/AppLayout';
 import { TaskModal } from './components/tasks/TaskModal';
 import { CreateTaskModal } from './components/tasks/CreateTaskModal';
@@ -14,6 +15,7 @@ import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <BrowserRouter>
       <Routes>
         <Route element={<AppLayout />}>
@@ -31,5 +33,6 @@ export default function App() {
       <ToastContainer />
       <ConnectionCheck />
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }

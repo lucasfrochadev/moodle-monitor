@@ -11,7 +11,6 @@ import {
   Edit3,
   MoreHorizontal,
 } from 'lucide-react';
-import { useTaskStore } from '../../store/taskStore';
 import { useUIStore } from '../../store/uiStore';
 import { cn } from '../../utils/cn';
 import { formatDateShort, isOverdue, daysUntil } from '../../utils/date';
@@ -20,41 +19,50 @@ import { Button } from '../ui/Button';
 import { Spinner } from '../ui/Spinner';
 import { EmptyState } from '../ui/EmptyState';
 import { STATUS_LABELS, STATUS_COLORS } from '../../types';
+import { fetchVigentActivities } from '../../api/tasks';
+import type { Task } from '../../types';
 
 export function ActivityList() {
-  const { vigentActivities, loadVigent, loading } = useTaskStore();
   const { openTaskModal } = useUIStore();
-
+  const [activities, setActivities] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterDiscipline, setFilterDiscipline] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'due_date' | 'priority' | 'discipline'>('due_date');
   const [actionMenu, setActionMenu] = useState<string | null>(null);
-  const [localActivities, setLocalActivities] = useState(vigentActivities);
 
   useEffect(() => {
-    loadVigent();
-  }, [loadVigent]);
-
-  useEffect(() => {
-    setLocalActivities(vigentActivities);
-  }, [vigentActivities]);
+    const load = async () => {
+      setLoading(true);
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const data = await fetchVigentActivities({ due_date_after: today });
+        setActivities(data);
+      } catch {
+        setActivities([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const disciplines = useMemo(() => {
     const set = new Set<string>();
-    localActivities.forEach((a) => {
+    activities.forEach((a) => {
       if (a.discipline) set.add(a.discipline);
     });
     return Array.from(set).sort();
-  }, [localActivities]);
+  }, [activities]);
 
   const handleArchive = (id: string) => {
-    setLocalActivities((prev) => prev.filter((a) => a.id !== id));
+    setActivities((prev) => prev.filter((a) => a.id !== id));
     setActionMenu(null);
   };
 
   const handleIgnore = (id: string) => {
-    setLocalActivities((prev) => prev.filter((a) => a.id !== id));
+    setActivities((prev) => prev.filter((a) => a.id !== id));
     setActionMenu(null);
   };
 
@@ -63,7 +71,7 @@ export function ActivityList() {
   };
 
   const filtered = useMemo(() => {
-    let items = [...localActivities];
+    let items = [...activities];
 
     if (search) {
       const q = search.toLowerCase();
@@ -92,17 +100,17 @@ export function ActivityList() {
     });
 
     return items;
-  }, [localActivities, search, filterStatus, filterDiscipline, sortBy]);
+  }, [activities, search, filterStatus, filterDiscipline, sortBy]);
 
   const stats = useMemo(() => {
-    const total = localActivities.length;
-    const overdue = localActivities.filter((a) => isOverdue(a.due_date) && a.status !== 'completed').length;
-    const dueThisWeek = localActivities.filter((a) => {
+    const total = activities.length;
+    const overdue = activities.filter((a) => isOverdue(a.due_date) && a.status !== 'completed').length;
+    const dueThisWeek = activities.filter((a) => {
       const d = daysUntil(a.due_date);
       return d !== null && d >= 0 && d <= 7;
     }).length;
     return { total, overdue, dueThisWeek };
-  }, [localActivities]);
+  }, [activities]);
 
   return (
     <div className="p-4 lg:p-6 max-w-6xl mx-auto space-y-6">
@@ -143,7 +151,6 @@ export function ActivityList() {
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
             />
           </div>
-
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -154,7 +161,6 @@ export function ActivityList() {
               <option key={val} value={val}>{label}</option>
             ))}
           </select>
-
           <select
             value={filterDiscipline}
             onChange={(e) => setFilterDiscipline(e.target.value)}
@@ -165,7 +171,6 @@ export function ActivityList() {
               <option key={d} value={d}>{d}</option>
             ))}
           </select>
-
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
@@ -226,7 +231,6 @@ export function ActivityList() {
                     >
                       <MoreHorizontal size={15} className="text-gray-400" />
                     </button>
-
                     {isOpen && (
                       <div className="absolute right-0 top-9 z-50 w-44 bg-white rounded-xl shadow-lg border border-gray-200 py-1">
                         <button
@@ -267,7 +271,6 @@ export function ActivityList() {
                   <Badge className={cn('text-[10px]', STATUS_COLORS[activity.status])}>
                     {STATUS_LABELS[activity.status] || activity.status}
                   </Badge>
-
                   {activity.priority > 0 && (
                     <span className={cn(
                       'text-[10px] px-1.5 py-0.5 rounded-full font-medium',
@@ -278,14 +281,13 @@ export function ActivityList() {
                       {activity.priority === 3 ? 'Urgente' : activity.priority === 2 ? 'Alta' : 'Média'}
                     </span>
                   )}
-
-                  {activity.due_date && (
+                  {(activity.due_date || activity.publication_date) && (
                     <span className={cn(
                       'flex items-center gap-1 text-xs ml-auto',
                       overdue ? 'text-red-500 font-semibold' : isUrgent ? 'text-orange-500 font-medium' : 'text-gray-500'
                     )}>
                       {overdue ? <AlertTriangle size={12} /> : <Calendar size={12} />}
-                      {formatDateShort(activity.due_date)}
+                      {activity.due_date ? formatDateShort(activity.due_date) : 'Pub. ' + formatDateShort(activity.publication_date!)}
                     </span>
                   )}
                 </div>

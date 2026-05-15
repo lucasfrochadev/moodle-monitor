@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import yaml
 from fastapi import APIRouter
 
 from api.services.sync_service import sync_service
@@ -6,11 +9,24 @@ from api.config import config
 
 router = APIRouter(prefix="/api/sync", tags=["Sync"])
 
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+def _load_course_ids() -> list[int] | None:
+    config_path = BASE_DIR / "config.yaml"
+    if not config_path.exists():
+        return None
+    with open(config_path, "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+    ids = cfg.get("monitoring", {}).get("course_ids", [])
+    return ids if ids else None
+
 
 @router.post("", response_model=SyncResult)
 def trigger_sync():
     sync_service.set_monitor_path(config.monitor_db_path)
-    return sync_service.sync()
+    course_ids = _load_course_ids()
+    return sync_service.sync(course_ids)
 
 
 @router.get("/status")
