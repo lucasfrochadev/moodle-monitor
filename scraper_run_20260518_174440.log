@@ -1,0 +1,159 @@
+Inicializando Moodle Monitor
+Banco de dados conectado
+Storage inicializado
+Iniciando autenticação em dois estágios
+Estágio 1: Login no portal institucional
+HTTP Request: POST https://unisalesiano.com.br/salaEstudo/libs/soa/validarLogin.php "HTTP/1.1 200 OK"
+Login OK, redirecionando para: menu.php
+Login no portal bem-sucedido
+Estágio 2: Extraindo credenciais do Moodle via loginAva.php
+HTTP Request: POST https://unisalesiano.com.br/salaEstudo/libs/soa/loginAva.php "HTTP/1.1 200 OK"
+Credenciais Moodle extraídas
+Estágio 3: Login no Moodle
+HTTP Request: GET https://missaosalesiana.mrooms.net/login/index.php "HTTP/1.1 200 OK"
+HTTP Request: POST https://missaosalesiana.mrooms.net/login/index.php "HTTP/1.1 303 See Other"
+HTTP Request: GET https://missaosalesiana.mrooms.net/login/index.php?testsession=14765 "HTTP/1.1 303 See Other"
+HTTP Request: GET https://missaosalesiana.mrooms.net/ "HTTP/1.1 200 OK"
+Login direto no Moodle bem-sucedido
+HTTP Request: POST https://missaosalesiana.mrooms.net/login/token.php "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_webservice_get_site_info&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Autenticação via token API Moodle bem-sucedida
+Autenticação completa: portal + Moodle
+Autenticado como LUCAS FERREIRA ROCHA
+Modo API + HTML (token Moodle disponível)
+Notificador Email configurado
+Pipeline configurado com 6 estágios
+Health check: online há 0:00:02.966357 | Canais: 1 | Moodle: conectado | API: disponível
+Executando ciclo único de monitoramento
+Pipeline iniciado com 6 estágios
+Estágio 1: Escaneando cursos
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_enrol_get_users_courses&userid=14765&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Cursos obtidos via API
+Filtrando para 11 cursos configurados (de 11 encontrados)
+Cursos encontrados: 11
+Estágio 1/6 concluído em 0.52s
+Estágio 2: Escaneando seções e atividades
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=15980&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=16004&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=15980&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=16057&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=16020&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=16004&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=16057&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=16020&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=15298&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=15980&moodlewsrestformat=json "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=16004&moodlewsrestformat=json "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=15298&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=16020&moodlewsrestformat=json "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=16057&moodlewsrestformat=json "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=15298&moodlewsrestformat=json "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=15423&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=16090&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=15659&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=16090&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=15423&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=15659&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=16016&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=15423&moodlewsrestformat=json "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=16003&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=16090&moodlewsrestformat=json "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=15659&moodlewsrestformat=json "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=16003&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=16016&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=core_course_get_contents&courseid=16058&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Conteúdo do curso via API
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=16016&moodlewsrestformat=json "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_assign_get_assignments&courseids%5B0%5D=16058&includecontents=1&moodlewsrestformat=json "HTTP/1.1 200 OK"
+API get_assignments falhou: Moodle API error: invalidparameter: Valor inválido de parâmetro detectado
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=16003&moodlewsrestformat=json "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/webservice/rest/server.php?wstoken=2aafa0cb41b8806c426f75219906fd04&wsfunction=mod_quiz_get_quizzes_by_courses&courseids%5B0%5D=16058&moodlewsrestformat=json "HTTP/1.1 200 OK"
+Erro ao processar curso 16090: bad parameter or other API misuse
+Estágio 2/6 concluído em 1.28s
+Estágio 3: Extraindo detalhes das atividades
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=236873 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=243573 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=239086 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=244972 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/forum/view.php?id=234503 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/forum/view.php?id=234504 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=234505 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=235889 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=244203 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=240537 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=239024 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=242895 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=241608 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=238082 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=238105 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=241099 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=243757 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=242800 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=238555 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=240051 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=234506 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=241092 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=240620 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/forum/view.php?id=239957 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=238803 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=244604 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=243894 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/hsuforum/view.php?id=236582 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=240552 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/hsuforum/view.php?id=239159 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=236107 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=239213 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/forum/view.php?id=244116 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=239214 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=239221 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=240739 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=244697 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=241953 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=241636 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=241526 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=241590 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=241362 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=236641 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=238572 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=243313 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=243931 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=241365 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/quiz/view.php?id=242300 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=242555 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=244605 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=244621 "HTTP/1.1 200 OK"
+HTTP Request: GET https://missaosalesiana.mrooms.net/mod/assign/view.php?id=242191 "HTTP/1.1 200 OK"
+Estágio 3/6 concluído em 27.59s
+Estágio 4: Gerando snapshots
+Estágio 4/6 concluído em 0.07s
+Estágio 5: Comparando snapshots
+Total de mudanças detectadas: 0
+Estágio 5/6 concluído em 0.03s
+Estágio 6: Enviando notificações (0 mudanças, 1 canais)
+Estágio 6/6 concluído em 0.00s
+Pipeline concluído em 29.49s. Cursos: 11, Mudanças: 0
+Desligando monitor...
+Scheduler parado
+Banco de dados desconectado
+Banco de dados fechado (tamanho: 19.74 MB)
+Monitor desligado

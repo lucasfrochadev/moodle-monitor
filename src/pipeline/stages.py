@@ -408,6 +408,7 @@ class NotificationStage:
                     self._activity_repo.get_by_id, change.activity_id,
                 )
                 if db_activity:
+                    db_activity = dict(db_activity) if hasattr(db_activity, "keys") else db_activity
                     activity_name = db_activity["name"]
                     activity_url = db_activity.get("url", "")
                     course_id = db_activity.get("course_id")
@@ -416,6 +417,7 @@ class NotificationStage:
                             self._course_repo.get_by_id, course_id,
                         )
                         if course:
+                            course = dict(course) if hasattr(course, "keys") else course
                             course_name = course.get("fullname") or course.get("shortname") or "Desconhecida"
             else:
                 snapshot = await asyncio.to_thread(
