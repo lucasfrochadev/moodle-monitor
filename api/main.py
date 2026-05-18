@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.config import config
 from api.database import db
-from api.routers import boards, columns, tasks, activities, sync, dashboard, history, disciplines
+from api.routers import boards, columns, tasks, activities, sync, dashboard, history, disciplines, calendar
 
 
 @asynccontextmanager
@@ -39,6 +39,7 @@ app.include_router(sync.router)
 app.include_router(dashboard.router)
 app.include_router(history.router)
 app.include_router(disciplines.router)
+app.include_router(calendar.router)
 
 
 @app.get("/api/health")

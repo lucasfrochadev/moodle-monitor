@@ -173,6 +173,38 @@ class VigentActivityOut(BaseModel):
     is_overdue: bool = False
 
 
+# ─── Calendar Event ────────────────────────────────────────────────────────────
+
+class CalendarEventCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    event_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    event_time: str = ""
+    event_type: str = "other"
+    description: str = ""
+    color: str = "#8B5CF6"
+
+
+class CalendarEventUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    event_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    event_time: Optional[str] = None
+    event_type: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
+
+
+class CalendarEventOut(BaseModel):
+    id: str
+    title: str
+    event_date: str
+    event_time: str
+    event_type: str
+    description: str
+    color: str
+    created_at: str
+    updated_at: str
+
+
 # ─── Reorder ──────────────────────────────────────────────────────────────────
 
 class ReorderPayload(BaseModel):

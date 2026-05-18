@@ -252,6 +252,7 @@ class MonitorEngine:
         self._pipeline.add_stage(SectionScanStage(
             self._extractor, course_repo, section_repo, activity_repo,
             max_concurrent=self._config.monitoring.max_concurrent_courses,
+            include_types={'assign', 'quiz', 'forum', 'unknown', 'hsuforum'},
         ))
         self._pipeline.add_stage(ActivityDetailStage(
             self._extractor,

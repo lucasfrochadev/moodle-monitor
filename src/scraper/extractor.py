@@ -61,6 +61,7 @@ class Extractor:
                         "activities": activity_count,
                     },
                 )
+                sections = self._enrich_with_api_dates(sections, course.course_id)
                 return sections
 
         logger.info(
@@ -70,7 +71,7 @@ class Extractor:
         return self._extract_contents_html(course)
 
     def extract_activity_detail(self, activity: ActivityData) -> Optional[ActivityData]:
-        if activity.source == "api" and activity.description:
+        if activity.source == "api" and activity.description and activity.due_date is not None:
             return activity
 
         return self._extract_activity_detail_html(activity)
@@ -146,6 +147,32 @@ class Extractor:
                 extra={"course_id": course.course_id, "error": str(e)},
             )
             return []
+
+    def _enrich_with_api_dates(
+        self, sections: list[SectionData], course_id: int
+    ) -> list[SectionData]:
+        api_activities: dict[int, ActivityData] = {}
+
+        for acts in self._api.get_assignments([course_id]).values():
+            for a in acts:
+                api_activities[a.cmid] = a
+        for acts in self._api.get_quizzes([course_id]).values():
+            for a in acts:
+                api_activities[a.cmid] = a
+
+        if not api_activities:
+            return sections
+
+        for section in sections:
+            for i, activity in enumerate(section.activities):
+                api_a = api_activities.get(activity.cmid)
+                if api_a and (api_a.due_date or api_a.open_date or api_a.cutoff_date):
+                    section.activities[i].due_date = section.activities[i].due_date or api_a.due_date
+                    section.activities[i].open_date = section.activities[i].open_date or api_a.open_date
+                    section.activities[i].cutoff_date = api_a.cutoff_date
+                    section.activities[i].max_grade = section.activities[i].max_grade or api_a.max_grade
+
+        return sections
 
     def _extract_activity_detail_html(self, activity: ActivityData) -> Optional[ActivityData]:
         try:

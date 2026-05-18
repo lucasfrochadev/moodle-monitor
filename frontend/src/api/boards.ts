@@ -6,6 +6,11 @@ export async function fetchBoards(): Promise<Board[]> {
   return data;
 }
 
+export async function fetchDefaultBoard(): Promise<BoardFull> {
+  const { data } = await client.get('/boards/default');
+  return data;
+}
+
 export async function fetchBoard(id: string): Promise<BoardFull> {
   const { data } = await client.get(`/boards/${id}`);
   return data;

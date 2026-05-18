@@ -64,7 +64,7 @@ class BoardService:
         for col in columns:
             col = dict(col)
             tasks = db.execute(
-                "SELECT * FROM tasks WHERE column_id = ? AND archived = 0 ORDER BY position",
+                "SELECT * FROM tasks WHERE column_id = ? AND archived = 0 AND due_date IS NOT NULL AND due_date >= DATE('now') ORDER BY position",
                 (col["id"],),
             ).fetchall()
             col["tasks"] = [dict(t) for t in tasks]

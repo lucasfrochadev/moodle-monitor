@@ -64,7 +64,10 @@ class Database:
             yield cursor
             self._conn.commit()
         except Exception:
-            self._conn.rollback()
+            try:
+                self._conn.rollback()
+            except Exception:
+                pass
             raise
         finally:
             cursor.close()

@@ -87,12 +87,14 @@ class SectionScanStage:
         section_repo: SectionRepository,
         activity_repo: ActivityRepository,
         max_concurrent: int = 5,
+        include_types: set[str] | None = None,
     ):
         self._extractor = extractor
         self._course_repo = course_repo
         self._section_repo = section_repo
         self._activity_repo = activity_repo
         self._semaphore = asyncio.Semaphore(max_concurrent)
+        self._include_types = include_types
 
     async def execute(self, ctx: StageContext) -> StageContext:
         logger.info("Estágio 2: Escaneando seções e atividades")
@@ -144,6 +146,8 @@ class SectionScanStage:
                 )
 
             for activity in section.activities:
+                if self._include_types is not None and activity.type.value not in self._include_types:
+                    continue
                 activity_db_id = await asyncio.to_thread(
                     self._activity_repo.upsert, course_db_id, section_db_id, activity,
                 )
@@ -285,11 +289,20 @@ class CompareStage:
                     ))
                     continue
 
-                old_snapshot_before_last = await asyncio.to_thread(
-                    self._get_penultimate_snapshot, activity_id,
-                )
-
                 snap = dict(last_snapshot) if hasattr(last_snapshot, "keys") else last_snapshot
+
+                # Version == 1 = first snapshot ever → NEW_ACTIVITY
+                if snap.get("version", 0) == 1:
+                    change = DetectedChange(
+                        activity_id=activity_id,
+                        change_type=ChangeType.NEW_ACTIVITY,
+                        new_value=activity.name,
+                        snapshot_to_id=new_snapshot_id,
+                    )
+                    await asyncio.to_thread(self._change_repo.create, change)
+                    all_changes.append(change)
+                    continue
+
                 if snap["full_hash"] == ContentHasher.compute_full_hash(activity):
                     continue
 
@@ -301,7 +314,7 @@ class CompareStage:
                     activity_id=activity_id,
                     old_activity=old_activity,
                     new_activity=activity,
-                    old_snapshot_id=old_snapshot_before_last,
+                    old_snapshot_id=snap["id"],
                     new_snapshot_id=new_snapshot_id,
                     min_diff_chars=self._min_diff_chars,
                 )
@@ -329,29 +342,6 @@ class CompareStage:
         ctx.changes_detected = all_changes
         logger.info("Total de mudanças detectadas: %d", len(all_changes))
         return ctx
-
-    def _get_penultimate_snapshot(self, activity_id: str) -> Optional[str]:
-        conn = None
-        try:
-            from src.storage.database import Database
-            import sqlite3
-            db = None
-            for ref in self._snapshot_repo.__dict__.values():
-                if isinstance(ref, Database):
-                    db = ref
-                    break
-            if not db:
-                return None
-            with db.transaction() as cur:
-                cur.execute("""
-                    SELECT id FROM activity_snapshots
-                    WHERE activity_id = ?
-                    ORDER BY version DESC LIMIT 1 OFFSET 1
-                """, (activity_id,))
-                row = cur.fetchone()
-                return row["id"] if row else None
-        except Exception:
-            return None
 
     def _snapshot_to_activity(self, snapshot: dict) -> Optional[ActivityData]:
         try:

@@ -42,7 +42,7 @@ export default function DisciplinesPage() {
     name.split(' ').map((w) => w[0]).join('').slice(0, 2);
 
   return (
-    <div className="p-4 lg:p-6 max-w-6xl mx-auto space-y-6">
+    <div className="p-4 lg:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <BookOpen size={22} className="text-primary" />

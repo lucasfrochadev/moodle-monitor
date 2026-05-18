@@ -21,8 +21,9 @@ import { EmptyState } from '../ui/EmptyState';
 import { STATUS_LABELS, STATUS_COLORS } from '../../types';
 import { fetchVigentActivities } from '../../api/tasks';
 import type { Task } from '../../types';
+import type { FilterMode } from '../../pages/ActivitiesPage';
 
-export function ActivityList() {
+export function ActivityList({ filterMode = 'vigentes' }: { filterMode?: FilterMode }) {
   const { openTaskModal } = useUIStore();
   const [activities, setActivities] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +38,18 @@ export function ActivityList() {
       setLoading(true);
       try {
         const today = new Date().toISOString().split('T')[0];
-        const data = await fetchVigentActivities({ due_date_after: today });
+        const params: {
+          disciplina?: string;
+          status?: string;
+          due_date_before?: string;
+          due_date_after?: string;
+        } = {};
+        if (filterMode === 'vigentes') {
+          params.due_date_after = today;
+        } else if (filterMode === 'vencidas') {
+          params.due_date_before = today;
+        }
+        const data = await fetchVigentActivities(params);
         setActivities(data);
       } catch {
         setActivities([]);
@@ -46,7 +58,7 @@ export function ActivityList() {
       }
     };
     load();
-  }, []);
+  }, [filterMode]);
 
   const disciplines = useMemo(() => {
     const set = new Set<string>();

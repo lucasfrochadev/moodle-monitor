@@ -1,16 +1,19 @@
 import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { KanbanBoard } from '../components/kanban/KanbanBoard';
 import { useBoardStore } from '../store/boardStore';
 import { Spinner } from '../components/ui/Spinner';
 
 export default function KanbanPage() {
   const { id } = useParams<{ id: string }>();
-  const { currentBoard, loadBoard, loading } = useBoardStore();
+  const location = useLocation();
+  const isQuadro = location.pathname === '/quadro';
+  const { currentBoard, loadBoard, loadDefaultBoard, loading } = useBoardStore();
 
   useEffect(() => {
-    if (id) loadBoard(id);
-  }, [id, loadBoard]);
+    if (isQuadro) loadDefaultBoard();
+    else if (id) loadBoard(id);
+  }, [id, isQuadro, loadBoard, loadDefaultBoard]);
 
   if (loading) return <Spinner size="lg" />;
   if (!currentBoard) {

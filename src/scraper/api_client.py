@@ -44,14 +44,23 @@ class MoodleAPIClient:
 
         params.setdefault("moodlewsrestformat", "json")
 
+        query_params: list[tuple[str, str]] = [
+            ("wstoken", self._token),
+            ("wsfunction", function),
+        ]
+        for key, value in params.items():
+            if isinstance(value, list):
+                for i, v in enumerate(value):
+                    query_params.append((f"{key}[{i}]", str(v)))
+            elif isinstance(value, bool):
+                query_params.append((key, "1" if value else "0"))
+            else:
+                query_params.append((key, str(value)))
+
         response = self._session.request(
             "GET",
             self.WS_ENDPOINT,
-            params={
-                "wstoken": self._token,
-                "wsfunction": function,
-                **params,
-            },
+            params=query_params,
         )
 
         try:

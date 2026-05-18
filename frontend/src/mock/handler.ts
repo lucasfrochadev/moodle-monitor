@@ -10,6 +10,25 @@ export function handleMockRequest(method: string, url?: string, data?: any): { d
     return { data: MOCK_BOARDS };
   }
 
+  if (baseUrl === '/boards/default' && method === 'GET') {
+    const quadro = MOCK_BOARDS.find(b => b.name === 'Quadro') || MOCK_BOARDS[0];
+    if (quadro) {
+      const full = getMockBoardFull(quadro.id);
+      if (full) return { data: full };
+    }
+    return {
+      data: {
+        ...MOCK_BOARDS[0],
+        name: 'Quadro',
+        columns: [
+          { id: 'col-pend-1', board_id: MOCK_BOARDS[0].id, name: 'A Fazer', position: 0, color: '#636E72', created_at: new Date().toISOString(), tasks: [] },
+          { id: 'col-prog-1', board_id: MOCK_BOARDS[0].id, name: 'Em Andamento', position: 1, color: '#0984E3', created_at: new Date().toISOString(), tasks: [] },
+          { id: 'col-done-1', board_id: MOCK_BOARDS[0].id, name: 'Concluído', position: 2, color: '#00B894', created_at: new Date().toISOString(), tasks: [] },
+        ],
+      },
+    };
+  }
+
   if (segments[0] === 'boards' && segments.length === 2 && method === 'GET') {
     const board = getMockBoardFull(segments[1]);
     return board ? { data: board } : null;

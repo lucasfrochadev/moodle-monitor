@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -10,6 +10,10 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from '@dnd-kit/core';
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
 import { KanbanColumn } from './KanbanColumn';
 import { KanbanCard } from './KanbanCard';
@@ -22,11 +26,15 @@ import { useTaskStore } from '../../store/taskStore';
 import { useUIStore } from '../../store/uiStore';
 import type { ColumnWithTasks } from '../../types';
 
+const COL_PREFIX = 'column:';
+function colSortableId(colId: string) { return COL_PREFIX + colId; }
+
 export function KanbanBoard() {
-  const { currentBoard, loadBoard, addColumn, updateColumn, deleteColumn } = useBoardStore();
+  const { currentBoard, loadBoard, addColumn, updateColumn, deleteColumn, reorderColumns } = useBoardStore();
   const { deleteTask, moveTask } = useTaskStore();
   const { openTaskModal, openCreateTask, setCreateColumnModalOpen, createColumnModalOpen, confirmDialog, showConfirm, closeConfirm } = useUIStore();
   const [activeTask, setActiveTask] = useState<any>(null);
+  const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [editingColumn, setEditingColumn] = useState<ColumnWithTasks | null>(null);
 
   const sensors = useSensors(
@@ -35,12 +43,20 @@ export function KanbanBoard() {
   );
 
   const boardId = currentBoard?.id;
+  const columnSortableIds = useMemo(
+    () => (currentBoard?.columns ?? []).map((c) => colSortableId(c.id)),
+    [currentBoard?.columns]
+  );
 
   const handleDragStart = (event: DragStartEvent) => {
-    const taskId = event.active.id as string;
+    const id = event.active.id as string;
+    if (id.startsWith(COL_PREFIX)) {
+      setActiveColumnId(id);
+      return;
+    }
     if (!currentBoard) return;
     for (const col of currentBoard.columns) {
-      const task = col.tasks.find((t) => t.id === taskId);
+      const task = col.tasks.find((t) => t.id === id);
       if (task) {
         setActiveTask(task);
         break;
@@ -50,9 +66,31 @@ export function KanbanBoard() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     setActiveTask(null);
+    setActiveColumnId(null);
     const { active, over } = event;
     if (!over || !boardId) return;
 
+    // Column reorder
+    if (String(active.id).startsWith(COL_PREFIX) && String(over.id).startsWith(COL_PREFIX)) {
+      const items = (currentBoard?.columns ?? []).map((c, i) => ({
+        id: c.id,
+        position: i,
+      }));
+      const activeColId = String(active.id).slice(COL_PREFIX.length);
+      const overColId = String(over.id).slice(COL_PREFIX.length);
+      const activeIdx = items.findIndex((i) => i.id === activeColId);
+      const overIdx = items.findIndex((i) => i.id === overColId);
+      if (activeIdx === -1 || overIdx === -1 || activeIdx === overIdx) return;
+
+      const reordered = [...items];
+      const [moved] = reordered.splice(activeIdx, 1);
+      reordered.splice(overIdx, 0, moved);
+      const updated = reordered.map((item, pos) => ({ id: item.id, position: pos }));
+      await reorderColumns(updated);
+      return;
+    }
+
+    // Task move
     const taskId = active.id as string;
     const overId = over.id as string;
     let targetColumnId: string | undefined;
@@ -152,37 +190,49 @@ export function KanbanBoard() {
         onDragEnd={handleDragEnd}
       >
         <div className="flex-1 overflow-x-auto pb-4">
-          <div className="flex gap-4 h-full min-h-[calc(100vh-8rem)] p-4">
-            {currentBoard.columns.map((column) => (
-              <KanbanColumn
-                key={column.id}
-                column={column}
-                onAddTask={() => openCreateTask(currentBoard.id, column.id)}
-                onTaskClick={(taskId) => openTaskModal(taskId, currentBoard.id)}
-                onEditTask={handleEditTask}
-                onDeleteTask={(taskId) => confirmDeleteTask(taskId)}
-                onEditColumn={() => setEditingColumn(column)}
-                onDeleteColumn={() => confirmDeleteColumn(column.id, column.name)}
-              />
-            ))}
+          <SortableContext items={columnSortableIds} strategy={horizontalListSortingStrategy}>
+            <div className="flex gap-4 h-full min-h-[calc(100vh-8rem)] p-4">
+              {currentBoard.columns.map((column) => (
+                <KanbanColumn
+                  key={column.id}
+                  column={column}
+                  sortableId={colSortableId(column.id)}
+                  onAddTask={() => openCreateTask(currentBoard.id, column.id)}
+                  onTaskClick={(taskId) => openTaskModal(taskId, currentBoard.id)}
+                  onEditTask={handleEditTask}
+                  onDeleteTask={(taskId) => confirmDeleteTask(taskId)}
+                  onEditColumn={() => setEditingColumn(column)}
+                  onDeleteColumn={() => confirmDeleteColumn(column.id, column.name)}
+                />
+              ))}
 
-            <div className="shrink-0 w-72 self-start">
-              <Button
-                variant="ghost"
-                className="w-full border-2 border-dashed border-gray-300 text-gray-400 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
-                onClick={() => setCreateColumnModalOpen(true)}
-              >
-                <Plus size={18} />
-                Adicionar Coluna
-              </Button>
+              <div className="shrink-0 w-72 self-start">
+                <Button
+                  variant="ghost"
+                  className="w-full border-2 border-dashed border-gray-300 text-gray-400 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
+                  onClick={() => setCreateColumnModalOpen(true)}
+                >
+                  <Plus size={18} />
+                  Adicionar Coluna
+                </Button>
+              </div>
             </div>
-          </div>
+          </SortableContext>
         </div>
 
         <DragOverlay>
           {activeTask && (
             <div className="w-72 opacity-95">
               <KanbanCard task={activeTask} isDragOverlay />
+            </div>
+          )}
+          {activeColumnId && currentBoard && (
+            <div className="shrink-0 w-72 opacity-90 rotate-2 scale-105">
+              <div className="bg-white rounded-xl border-2 border-primary/40 shadow-xl px-3.5 py-3">
+                <h3 className="font-semibold text-sm text-gray-800 truncate">
+                  {currentBoard.columns.find(c => colSortableId(c.id) === activeColumnId)?.name}
+                </h3>
+              </div>
             </div>
           )}
         </DragOverlay>

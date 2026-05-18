@@ -23,6 +23,10 @@ class ActivityType(StrEnum):
     GLOSSARY = "glossary"
     WIKI = "wiki"
     WORKSHOP = "workshop"
+    CHAT = "chat"
+    LABEL = "label"
+    ATTENDANCE = "attendance"
+    HSUFORUM = "hsuforum"
     UNKNOWN = "unknown"
 
 

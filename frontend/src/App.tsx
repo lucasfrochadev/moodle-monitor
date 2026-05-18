@@ -21,6 +21,7 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/atividades" element={<ActivitiesPage />} />
+          <Route path="/quadro" element={<KanbanPage />} />
           <Route path="/board/:id" element={<KanbanPage />} />
           <Route path="/calendario" element={<CalendarPage />} />
           <Route path="/disciplinas" element={<DisciplinesPage />} />

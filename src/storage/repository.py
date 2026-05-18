@@ -184,6 +184,12 @@ class SnapshotRepository:
     ) -> str:
         sid = str(uuid.uuid4())
         desc_hash = self._compute_desc_hash(activity.description)
+
+        prev = self.get_latest_by_activity(activity_id)
+        due_date = activity.due_date or (prev["due_date"] if prev else None)
+        open_date = activity.open_date or (prev["open_date"] if prev else None)
+        cutoff_date = activity.cutoff_date or (prev["cutoff_date"] if prev else None)
+
         with self._db.transaction() as cur:
             cur.execute("""
                 INSERT INTO activity_snapshots
@@ -193,7 +199,7 @@ class SnapshotRepository:
             """, (
                 sid, activity_id, version, activity.name, activity.description,
                 desc_hash,
-                activity.due_date, activity.open_date, activity.cutoff_date,
+                due_date, open_date, cutoff_date,
                 activity.max_grade, files_hash, full_hash,
             ))
         return sid

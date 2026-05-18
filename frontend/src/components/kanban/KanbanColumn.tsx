@@ -1,9 +1,11 @@
 import { useDroppable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Pencil, Trash2, GripVertical } from 'lucide-react';
 import { KanbanCard } from './KanbanCard';
 import type { ColumnWithTasks } from '../../types';
 import { cn } from '../../utils/cn';
@@ -11,6 +13,7 @@ import { useState } from 'react';
 
 interface KanbanColumnProps {
   column: ColumnWithTasks;
+  sortableId?: string;
   onAddTask: () => void;
   onTaskClick: (taskId: string) => void;
   onEditTask: (taskId: string) => void;
@@ -26,18 +29,56 @@ const STATUS_COLORS: Record<string, string> = {
   completed: '#10B981',
 };
 
-export function KanbanColumn({ column, onAddTask, onTaskClick, onEditTask, onDeleteTask, onEditColumn, onDeleteColumn }: KanbanColumnProps) {
+export function KanbanColumn({ column, sortableId, onAddTask, onTaskClick, onEditTask, onDeleteTask, onEditColumn, onDeleteColumn }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
   });
+
+  const sortable = useSortable({
+    id: sortableId ?? column.id,
+    disabled: !sortableId,
+  });
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setColumnRef,
+    transform,
+    transition,
+    isDragging,
+  } = sortable;
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   const colColor = column.color || STATUS_COLORS[column.id] || '#E0E0E0';
 
+  const columnStyle = sortableId ? {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  } : undefined;
+
   return (
-    <div className="shrink-0 w-72 flex flex-col bg-gray-50/80 rounded-xl border border-gray-200/60 max-h-full">
-      <div className="flex items-center justify-between px-3.5 py-3">
-        <div className="flex items-center gap-2.5 min-w-0">
+    <div
+      ref={sortableId ? setColumnRef : undefined}
+      style={columnStyle}
+      className={cn(
+        'shrink-0 w-72 flex flex-col bg-gray-50/80 rounded-xl border border-gray-200/60 max-h-full',
+        isDragging && sortableId && 'ring-2 ring-primary/30'
+      )}
+    >
+      <div className="group flex items-center justify-between px-3.5 py-3">
+        <div className="flex items-center gap-1 min-w-0">
+          {sortableId && (
+            <button
+              {...attributes}
+              {...listeners}
+              className="p-0.5 cursor-grab active:cursor-grabbing touch-none opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GripVertical size={13} className="text-gray-300" />
+            </button>
+          )}
           <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colColor }} />
           <h3 className="font-semibold text-sm text-gray-800 truncate">{column.name}</h3>
           <span className="text-[11px] font-medium text-gray-400 bg-white border border-gray-200 rounded-md px-1.5 py-0.5 shrink-0">
@@ -110,12 +151,15 @@ export function KanbanColumn({ column, onAddTask, onTaskClick, onEditTask, onDel
         </SortableContext>
 
         {column.tasks.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-24 text-xs text-gray-400 gap-1">
+          <button
+            onClick={onAddTask}
+            className="w-full flex flex-col items-center justify-center h-24 text-xs text-gray-400 gap-1 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+          >
             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
               <Plus size={14} className="text-gray-300" />
             </div>
-            <span>Arraste tarefas aqui</span>
-          </div>
+            <span>Adicionar tarefa</span>
+          </button>
         )}
       </div>
     </div>

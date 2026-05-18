@@ -1,0 +1,7 @@
+resource: 127
+page: 103
+unknown: 102
+assign: 74
+quiz: 70
+folder: 26
+forum: 19

@@ -34,7 +34,12 @@ export async function deleteTask(boardId: string, taskId: string): Promise<void>
   await client.delete(`/boards/${boardId}/tasks/${taskId}`);
 }
 
-export async function fetchVigentActivities(params?: { disciplina?: string; status?: string }): Promise<Task[]> {
+export async function fetchVigentActivities(params?: {
+  disciplina?: string;
+  status?: string;
+  due_date_before?: string;
+  due_date_after?: string;
+}): Promise<Task[]> {
   const { data } = await client.get('/activities/vigent', { params });
   return data;
 }

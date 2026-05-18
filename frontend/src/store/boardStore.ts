@@ -11,6 +11,7 @@ interface BoardState {
 
   loadBoards: () => Promise<void>;
   loadBoard: (id: string) => Promise<void>;
+  loadDefaultBoard: () => Promise<void>;
   createBoard: (name: string, description?: string, color?: string) => Promise<Board>;
   updateBoard: (id: string, data: Partial<Board>) => Promise<void>;
   deleteBoard: (id: string) => Promise<void>;
@@ -32,6 +33,16 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     try {
       const boards = await boardsApi.fetchBoards();
       set({ boards, loading: false });
+    } catch (e: any) {
+      set({ error: e.message, loading: false });
+    }
+  },
+
+  loadDefaultBoard: async () => {
+    set({ loading: true, error: null });
+    try {
+      const board = await boardsApi.fetchDefaultBoard();
+      set({ currentBoard: board, loading: false });
     } catch (e: any) {
       set({ error: e.message, loading: false });
     }

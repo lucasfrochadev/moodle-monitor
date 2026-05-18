@@ -202,23 +202,28 @@ class TaskService:
 
     # ── Vigent activities ─────────────────────────────────────────────────
 
-    def list_vigent(self) -> list[dict]:
+    def list_vigent(self, due_date_after: str | None = None) -> list[dict]:
         from datetime import datetime, timezone
         board = db.execute(
             "SELECT id FROM boards WHERE name = ?", ("Atividades Vigentes",)
         ).fetchone()
         if not board:
             return []
-        rows = db.execute("""
+
+        query = """
             SELECT t.*, ai.source_course_name, ai.source_activity_id
             FROM tasks t
             LEFT JOIN activity_imports ai ON ai.task_id = t.id
-            WHERE t.board_id = ? AND t.archived = 0
-            ORDER BY
-                CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END,
-                t.due_date ASC,
-                t.created_at DESC
-        """, (board["id"],)).fetchall()
+            WHERE t.board_id = ?
+              AND t.archived = 0
+              AND t.due_date IS NOT NULL
+        """
+        params = [board["id"]]
+        if due_date_after:
+            query += " AND t.due_date >= ?"
+            params.append(due_date_after)
+        query += " ORDER BY t.due_date ASC, t.created_at DESC"
+        rows = db.execute(query, params).fetchall()
 
         now_dt = datetime.utcnow().replace(tzinfo=None)
         results = []

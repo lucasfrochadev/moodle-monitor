@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { useUIStore } from '../../store/uiStore';
 import { useBoardStore } from '../../store/boardStore';
 import { useTaskStore } from '../../store/taskStore';
+import { fetchDisciplines } from '../../api/other';
+import type { Discipline } from '../../api/other';
 
 const PRIORITY_OPTIONS = [
   { value: 0, label: 'Normal' },
@@ -24,6 +26,11 @@ export function CreateTaskModal() {
   const [dueDate, setDueDate] = useState('');
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [disciplines, setDisciplines] = useState<Discipline[]>([]);
+
+  useEffect(() => {
+    fetchDisciplines().then(setDisciplines).catch(() => {});
+  }, []);
 
   if (!createTaskBoardId || !createTaskColumnId) return null;
 
@@ -109,13 +116,16 @@ export function CreateTaskModal() {
 
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1.5">Disciplina</label>
-            <input
-              type="text"
+            <select
               value={discipline}
               onChange={(e) => setDiscipline(e.target.value)}
-              placeholder="Ex: Matemática"
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-            />
+            >
+              <option value="">Sem disciplina</option>
+              {disciplines.map((d) => (
+                <option key={d.id} value={d.name}>{d.name}</option>
+              ))}
+            </select>
           </div>
         </div>
 

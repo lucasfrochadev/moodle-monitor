@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { RefreshCw, ServerCrash, WifiOff } from 'lucide-react';
-import client, { setMockMode, isMockMode } from '../api/client';
+import { RefreshCw, ServerCrash } from 'lucide-react';
+import client from '../api/client';
 import { Button } from '../components/ui/Button';
 
 export default function NotFoundPage() {
@@ -20,43 +20,15 @@ export default function NotFoundPage() {
 }
 
 export function ConnectionCheck() {
-  const [status, setStatus] = useState<'checking' | 'ok' | 'error' | 'mock'>(
-    isMockMode() ? 'mock' : 'checking'
-  );
+  const [status, setStatus] = useState<'checking' | 'ok' | 'error'>('checking');
 
   useEffect(() => {
-    if (status === 'mock') return;
     client.get('/health')
       .then(() => setStatus('ok'))
-      .catch(() => {
-        setMockMode(true);
-        setStatus('mock');
-      });
-  }, [status]);
+      .catch(() => setStatus('error'));
+  }, []);
 
   if (status === 'ok' || status === 'checking') return null;
-
-  if (status === 'mock') {
-    return (
-      <div className="fixed bottom-4 right-4 z-50">
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 shadow-lg flex items-center gap-3">
-          <WifiOff size={20} className="text-amber-600" />
-          <div>
-            <p className="text-sm font-medium text-amber-800">Modo demonstração</p>
-            <p className="text-xs text-amber-600">Usando dados mockados — backend offline</p>
-          </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => window.location.reload()}
-          >
-            <RefreshCw size={14} />
-            Tentar
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed bottom-4 right-4 z-50">

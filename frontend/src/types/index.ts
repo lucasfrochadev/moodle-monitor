@@ -74,6 +74,43 @@ export interface VigentActivity {
   is_overdue: boolean;
 }
 
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  event_date: string;
+  event_time: string;
+  event_type: string;
+  description: string;
+  color: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CalendarBoardTask {
+  id: string;
+  title: string;
+  discipline: string;
+  due_date: string;
+  priority: number;
+  status: string;
+  column_id: string;
+  board_id: string;
+}
+
+export const EVENT_TYPE_LABELS: Record<string, string> = {
+  exam: 'Prova',
+  appointment: 'Compromisso',
+  study: 'Estudo',
+  other: 'Outro',
+};
+
+export const EVENT_TYPE_COLORS: Record<string, string> = {
+  exam: '#EF4444',
+  appointment: '#F59E0B',
+  study: '#3B82F6',
+  other: '#8B5CF6',
+};
+
 export interface SyncResult {
   imported: number;
   updated: number;

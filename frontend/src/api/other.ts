@@ -1,8 +1,8 @@
 import client from './client';
 import type { DashboardStats, SyncResult } from '../types';
 
-export async function fetchDashboard(): Promise<DashboardStats> {
-  const { data } = await client.get('/dashboard');
+export async function fetchDashboard(params?: { due_date_after?: string }): Promise<DashboardStats> {
+  const { data } = await client.get('/dashboard', { params });
   return data;
 }
 

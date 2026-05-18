@@ -15,7 +15,8 @@ import { Spinner } from '../ui/Spinner';
 import { useTaskStore } from '../../store/taskStore';
 import { useUIStore } from '../../store/uiStore';
 import { useBoardStore } from '../../store/boardStore';
-import { fetchTaskHistory } from '../../api/other';
+import { fetchTaskHistory, fetchDisciplines } from '../../api/other';
+import type { Discipline } from '../../api/other';
 import { formatDate, formatDateShort, isOverdue } from '../../utils/date';
 import type { Task, TaskHistory as TaskHistoryType } from '../../types';
 import { PRIORITY_LABELS, STATUS_LABELS, STATUS_COLORS } from '../../types';
@@ -35,6 +36,8 @@ export function TaskModal() {
   const [editDescription, setEditDescription] = useState('');
   const [editStatus, setEditStatus] = useState('');
   const [editPriority, setEditPriority] = useState(0);
+  const [editDiscipline, setEditDiscipline] = useState('');
+  const [disciplines, setDisciplines] = useState<Discipline[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
@@ -50,10 +53,15 @@ export function TaskModal() {
         setEditDescription(data.description || '');
         setEditStatus(data.status);
         setEditPriority(data.priority);
+        setEditDiscipline(data.discipline || '');
         setHasChanges(false);
 
-        const hist = await fetchTaskHistory(taskModalId);
+        const [hist, disciplines] = await Promise.all([
+          fetchTaskHistory(taskModalId),
+          fetchDisciplines().catch(() => [] as Discipline[]),
+        ]);
         setHistory(hist);
+        setDisciplines(disciplines);
       } catch (e) {
         console.error(e);
       } finally {
@@ -74,10 +82,11 @@ export function TaskModal() {
         description: editDescription,
         status: editStatus,
         priority: editPriority,
+        discipline: editDiscipline,
       });
       setTask((prev) =>
         prev
-          ? { ...prev, title: editTitle, description: editDescription, status: editStatus, priority: editPriority }
+          ? { ...prev, title: editTitle, description: editDescription, status: editStatus, priority: editPriority, discipline: editDiscipline }
           : prev
       );
       setHasChanges(false);
@@ -157,6 +166,20 @@ export function TaskModal() {
                   ))}
                 </select>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Disciplina</label>
+              <select
+                value={editDiscipline}
+                onChange={(e) => { setEditDiscipline(e.target.value); setHasChanges(true); }}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              >
+                <option value="">Sem disciplina</option>
+                {disciplines.map((d) => (
+                  <option key={d.id} value={d.name}>{d.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 

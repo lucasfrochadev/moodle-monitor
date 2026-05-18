@@ -111,9 +111,21 @@ class StudyDatabase:
         CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
         CREATE INDEX IF NOT EXISTS idx_imports_source ON activity_imports(source_activity_id);
         CREATE INDEX IF NOT EXISTS idx_history_task ON task_history(task_id);
-        CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
-        """
+        CREATE INDEX IF NOT EXISTS idx_notifications_read
+            ON notifications(read);
 
+        CREATE TABLE IF NOT EXISTS calendar_events (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            event_date TEXT NOT NULL,
+            event_time TEXT DEFAULT '',
+            event_type TEXT NOT NULL DEFAULT 'other',
+            description TEXT DEFAULT '',
+            color TEXT DEFAULT '#8B5CF6',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
         with self.transaction() as cur:
             cur.executescript(schema)
 

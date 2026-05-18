@@ -231,12 +231,10 @@ class MoodleHTMLParser:
         return None
 
     def _extract_due_date(self, soup: BeautifulSoup) -> Optional[datetime]:
-        texts = ["Data de entrega", "Due date", "Vencimento", "Prazo final"]
-        return self._find_date_after_text(soup, texts)
+        return self._find_date_after_text(soup, ["Conclusão", "Prazo final", "Data de entrega", "Due date", "Vencimento"])
 
     def _extract_open_date(self, soup: BeautifulSoup) -> Optional[datetime]:
-        texts = ["Disponível a partir de", "Abrir", "Open", "Data de abertura"]
-        return self._find_date_after_text(soup, texts)
+        return self._find_date_after_text(soup, ["Aberto", "Disponível a partir de", "Abrir", "Open", "Data de abertura"])
 
     def _extract_instance_id(self, soup: BeautifulSoup) -> Optional[int]:
         for script in soup.find_all("script"):
@@ -312,58 +310,101 @@ class MoodleHTMLParser:
                 return at
         return ActivityType.UNKNOWN
 
+    _DUE_LABELS = {"conclusão", "prazo final", "data de entrega", "due date", "vencimento"}
+    _OPEN_LABELS = {"aberto", "disponível a partir de", "abrir", "open", "data de abertura"}
+
     def _find_date_after_text(
         self, soup: BeautifulSoup, label_texts: list[str]
     ) -> Optional[datetime]:
+        is_due = any(t.lower() in self._DUE_LABELS for t in label_texts)
+
+        combined = re.compile(
+            r"(?:^|\n)\s*"
+            r"(?:"
+            + "|".join(re.escape(t) for t in label_texts)
+            + r")[:\s]*"
+            r"(?:[a-zA-ZÀ-ÿ-]+,?\s*)?"
+            r"\d{1,2}(?:\s+[a-z]{3,4}\.?\s+|\s+de\s+\w+\s+|[/-])\d{2,4},?\s+\d{1,2}:\d{2}",
+            re.IGNORECASE | re.MULTILINE,
+        )
+        for match in combined.finditer(soup.text):
+            dates = self._extract_dates(match.group(0))
+            if dates:
+                return dates[-1] if is_due else dates[0]
+
         for text in label_texts:
             pattern = re.compile(re.escape(text), re.IGNORECASE)
             for element in soup.find_all(string=pattern):
-                parent = element.parent
-                if parent:
-                    next_text = parent.find_next(string=True)
-                    if next_text:
-                        dates = self._extract_dates(str(next_text))
-                        if dates:
-                            return dates[0]
+                raw = str(element).strip()
+                normalized = raw.rstrip(":").strip().lower()
 
-                    sibling = parent.find_next_sibling()
-                    if sibling:
-                        dates = self._extract_dates(sibling.get_text())
-                        if dates:
-                            return dates[0]
+                if normalized != text.lower():
+                    continue
 
-        for text in label_texts:
-            pattern = re.compile(
-                rf"{re.escape(text)}[:\s]*(\d{{1,2}}[/-]\d{{1,2}}[/-]\d{{2,4}}[:\s]*\d{{1,2}}:\d{{2}})",
-                re.IGNORECASE,
-            )
-            match = pattern.search(soup.text)
-            if match:
-                dates = self._extract_dates(match.group(0))
+                dates = self._extract_dates(raw)
                 if dates:
-                    return dates[0]
+                    return dates[-1] if is_due else dates[0]
+
+                parent = element.parent
+                if not parent:
+                    continue
+
+                entire = parent.get_text()
+                label_pos = entire.lower().find(text.lower())
+                if label_pos >= 0:
+                    after_label = entire[label_pos + len(text):]
+                    dates = self._extract_dates(after_label)
+                    if dates:
+                        return dates[-1] if is_due else dates[0]
+
+                dates = self._extract_dates(entire)
+                if dates:
+                    return dates[-1] if is_due else dates[0]
+
+                next_text = parent.find_next(string=True)
+                if next_text:
+                    dates = self._extract_dates(str(next_text))
+                    if dates:
+                        return dates[-1] if is_due else dates[0]
+
+                sibling = parent.find_next_sibling()
+                if sibling:
+                    dates = self._extract_dates(sibling.get_text())
+                    if dates:
+                        return dates[-1] if is_due else dates[0]
 
         return None
 
     def _extract_dates(self, text: str) -> list[datetime]:
         formats = [
-            r"(\d{1,2})/(\d{1,2})/(\d{4})\s+(\d{1,2}):(\d{2})",
-            r"(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})",
-            r"(\d{1,2})/(\d{1,2})/(\d{2})\s+(\d{1,2}):(\d{2})",
-            r"(\d{1,2}) de (\w+) de (\d{4}),\s+(\d{1,2}):(\d{2})",
+            (r"(\d{1,2})/(\d{1,2})/(\d{4})\s+(\d{1,2}):(\d{2})", False),
+            (r"(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})", False),
+            (r"(\d{1,2})/(\d{1,2})/(\d{2})\s+(\d{1,2}):(\d{2})", False),
+            (r"(?:[a-zA-ZÀ-ÿ-]+,?\s*)?(\d{1,2}) de (\w+) de (\d{4}),?\s+(\d{1,2}):(\d{2})", True),
+            (r"(?:[a-zA-ZÀ-ÿ-]+,?\s*)?(\d{1,2})\s+([a-z]{3,4})\.?\s+(\d{4}),?\s+(\d{1,2}):(\d{2})", True),
         ]
 
+        month_map = {
+            "janeiro": 1, "jan": 1, "jan.": 1,
+            "fevereiro": 2, "fev": 2, "fev.": 2,
+            "março": 3, "mar": 3, "mar.": 3,
+            "abril": 4, "abr": 4, "abr.": 4,
+            "maio": 5, "mai": 5, "mai.": 5,
+            "junho": 6, "jun": 6, "jun.": 6,
+            "julho": 7, "jul": 7, "jul.": 7,
+            "agosto": 8, "ago": 8, "ago.": 8,
+            "setembro": 9, "set": 9, "set.": 9,
+            "outubro": 10, "out": 10, "out.": 10,
+            "novembro": 11, "nov": 11, "nov.": 11,
+            "dezembro": 12, "dez": 12, "dez.": 12,
+        }
+
         results = []
-        for fmt in formats:
+        for fmt, is_text_month in formats:
             for match in re.finditer(fmt, text):
                 try:
-                    if fmt == formats[3]:
-                        month_map = {
-                            "janeiro": 1, "fevereiro": 2, "março": 3, "abril": 4,
-                            "maio": 5, "junho": 6, "julho": 7, "agosto": 8,
-                            "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12,
-                        }
-                        month = month_map.get(match.group(2).lower(), 1)
+                    if is_text_month:
+                        month = month_map.get(match.group(2).lower().rstrip("."), 1)
                         dt = datetime(
                             int(match.group(3)),
                             month,
