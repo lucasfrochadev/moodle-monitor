@@ -35,6 +35,14 @@ class CourseRepository:
                   course.summary, course.category))
         return cid
 
+    def get_by_id(self, course_id: str) -> Optional[dict]:
+        with self._db.transaction() as cur:
+            cur.execute(
+                "SELECT * FROM courses WHERE id = ?",
+                (course_id,),
+            )
+            return cur.fetchone()
+
     def get_by_moodle_id(self, moodle_course_id: int) -> Optional[dict]:
         with self._db.transaction() as cur:
             cur.execute(
@@ -151,6 +159,14 @@ class ActivityRepository:
                 f"UPDATE activities SET is_active = 0 WHERE id IN ({placeholders})",
                 activity_ids,
             )
+
+    def get_by_id(self, activity_id: str) -> Optional[dict]:
+        with self._db.transaction() as cur:
+            cur.execute(
+                "SELECT * FROM activities WHERE id = ?",
+                (activity_id,),
+            )
+            return cur.fetchone()
 
     def get_last_snapshot(self, activity_id: str) -> Optional[dict]:
         with self._db.transaction() as cur:

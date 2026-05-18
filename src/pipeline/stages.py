@@ -399,23 +399,33 @@ class NotificationStage:
             if not self._should_notify(change):
                 continue
 
-            activity = await asyncio.to_thread(
-                self._activity_repo.get_snapshot_by_id,
-                change.snapshot_to_id,
-            ) if change.snapshot_to_id else None
-
             activity_name = "Desconhecida"
             course_name = "Desconhecida"
             activity_url = ""
 
-            if activity:
-                act = dict(activity) if hasattr(activity, "keys") else activity
-                activity_name = act.get("name", "Desconhecida")
-                activity_url = act.get("url", "")
-
+            if change.activity_id:
                 db_activity = await asyncio.to_thread(
-                    lambda: None,
+                    self._activity_repo.get_by_id, change.activity_id,
                 )
+                if db_activity:
+                    activity_name = db_activity["name"]
+                    activity_url = db_activity.get("url", "")
+                    course_id = db_activity.get("course_id")
+                    if course_id:
+                        course = await asyncio.to_thread(
+                            self._course_repo.get_by_id, course_id,
+                        )
+                        if course:
+                            course_name = course.get("fullname") or course.get("shortname") or "Desconhecida"
+            else:
+                snapshot = await asyncio.to_thread(
+                    self._activity_repo.get_snapshot_by_id,
+                    change.snapshot_to_id,
+                ) if change.snapshot_to_id else None
+                if snapshot:
+                    snap = dict(snapshot) if hasattr(snapshot, "keys") else snapshot
+                    activity_name = snap.get("name", "Desconhecida")
+                    activity_url = snap.get("url", "")
 
             for notifier in self._notifiers:
                 try:
